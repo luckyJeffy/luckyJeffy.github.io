@@ -1,0 +1,134 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta name="generator" content="Hexo 3.8.0"><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta http-equiv="X-UA-Compatible" content="ie=edge"><title>Event Loop | Jeffy's Blog</title><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"><script src="/js/third-party/jquery.min.js">           </script><script src="/js/third-party/velocity.min.js">           </script><script src="/js/third-party/velocity.ui.min.js">           </script><link rel="icon" href="/img/favicon.ico"></head><body><nav id="nav-bar"><nav class="clear-fix" id="nav-container"><div class="pull-left" id="page-home"><a href="/">Jeffy's Blog</a></div><i class="fa fa-bars pull-right" id="toggle-nav" aria-hidden="true"></i><ul class="pull-right" id="navs"><li><a class="nav" href="/">Home</a></li><li><a class="nav" href="/about">About</a></li><li><a class="nav" href="/tags">Tags</a></li></ul></nav></nav><header id="header-info"><div id="header-container"><div id="site-info"><div id="terminal-pl"><div id="top-bar"><ul id="control"><li class="btn"></li><li class="btn"></li><li class="btn"></li></ul><div id="file-path"><i class="fa fa-folder folder-ic" aria-hidden="true"></i> Jeffy 10 X 10</div></div><div id="code-pl">Last updated: 2019-02-22<br>Jeffy:~ Desktop$ <span class="code-pl-input">node Event Loop.js</span><br><br>> Post.tags <br><a class="tag" href="#javascript"><span>javascript</span></a><a class="tag" href="#event loop"><span>event loop</span></a><br><br>> Post.prev <br><a href="/2019/03/10/开坑-Link-Chat/"><span class="answer">开坑 Link Chat</span></a><br><br>> Post.next <br><a href="/2018/12/28/利用flat-和flatMap-扁平化数组/"><span class="answer">利用flat()和flatMap()扁平化数组</span></a></div></div></div></div></header><div id="content-outer"><div id="content-inner"><article id="post"><a class="article-title">Event Loop</a><time class="article-date"><i class="fa fa-calendar" aria-hidden="true"></i> 2019-02-22</time><p><img src="/images/pasted-0.png" alt="upload successful"></p>
+<p>Javascript 支持处理并发事件,其并发模型基于 event loop</p>
+<p>根据上图来逐个理解该模型的含义</p>
+<h2 id="并发与并行"><a href="#并发与并行" class="headerlink" title="并发与并行"></a>并发与并行</h2><p>并发和并行是两个不同的概念,很容易被弄混。</p>
+<ul>
+<li>并发指的是同一时间有能力应对多件事</li>
+<li>并行指的是同一时间有能力做多件事</li>
+</ul>
+<h2 id="Call-Stack"><a href="#Call-Stack" class="headerlink" title="Call Stack"></a>Call Stack</h2><p>维基百科给出的解释是:</p>
+<blockquote>
+<p>调用栈（英语：Call stack，港台称“呼叫堆叠”，英文直接简称为“栈”（the stack））别称有：执行栈（execution stack）、控制栈（control stack）、运行时栈（run-time stack）与机器栈（machine stack），是计算机科学中存储有关正在运行的子程序的消息的栈。有时仅称“栈”，但栈中不一定仅存储子程序消息。几乎所有计算机程序都依赖于调用栈，然而高级语言一般将调用栈的细节隐藏至后台。<br>调用栈最经常被用于存放子程序的返回地址。在调用任何子程序时，主程序都必须暂存子程序运行完毕后应该返回到的地址。因此，如果被调用的子程序还要调用其他的子程序，其自身的返回地址就必须存入调用栈，在其自身运行完毕后再行取回。在递归程序中，每一层次递归都必须在调用栈上增加一条地址，因此如果程序出现无限递归（或仅仅是过多的递归层次），调用栈就会产生栈溢出。</p>
+</blockquote>
+<p><a href="https://zh.wikipedia.org/wiki/%E5%91%BC%E5%8F%AB%E5%A0%86%E7%96%8A" target="_blank" rel="noopener">https://zh.wikipedia.org/wiki/%E5%91%BC%E5%8F%AB%E5%A0%86%E7%96%8A</a></p>
+<p>在 Javascript 中, call stack 和 <a href="https://www.ecma-international.org/ecma-262/9.0/index.html#sec-execution-contexts" target="_blank" rel="noopener">execution context stack</a> 指的是同一个概念</p>
+<p>Javascript 引擎将执行环境( execution context )储存在执行环境栈( execution context stack )中, 利用「执行环境」来储存/查找对应的变量/函数</p>
+<a id="more"></a>
+<h2 id="event-loop"><a href="#event-loop" class="headerlink" title="event loop"></a>event loop</h2><p>在浏览器中, event loop是一个循环, 负责检查task queues(任务队列)是否为空. 如果task queue中有task(任务),event loop就取一个出来运行.</p>
+<p>值得注意的是, 浏览器的event loop规范由HTML标准提供, 而非ECMAScript.</p>
+<h2 id="task"><a href="#task" class="headerlink" title="task"></a>task</h2><p>task分为两种:</p>
+<ul>
+<li>macrotask</li>
+<li>microtask</li>
+</ul>
+<p>同样, task queue也分为两种</p>
+<ul>
+<li>macrotask queue</li>
+<li>microtask queue</li>
+</ul>
+<p>可以同时存在多个 macrotask queue, <strong>但只能有一个 microtask queue</strong></p>
+<p>当「执行环境栈」为空时, event loop 首先会检查 microtask queue</p>
+<p>如果microtask queue队列中有任务, 则依序执行队列中的 microtask ,然后把执行完的 microtask 从队列中删除,直到清空 microtask queue 为止</p>
+<p>如果在执行 microtask 的过程中生成了新的 microtask, 则把这个新的 microtask 添加到 microtask queue 队列的最后面,这个新的 microtask 也会在本次循环中被执行</p>
+<p>当 microtask queue 被清空后, event loop 会依照权重, 从权重高的 macrotask queue 中取出一个 macrotask 执行, 然后删除这个 macrotask</p>
+<p>等到「执行环境栈」再次为空后, 开始下一轮循环</p>
+<blockquote>
+<p>补充: 浏览器可能会将类似的 macrotask 放入同一个的 macrotask queue, 将不同的 macrotask 放入不同的 macrotask queue.<br>例如鼠标、键盘交互可能被分类到同一个 macrotask queue, 而 setTimeout 和 setInterval 则会被分类到另一个 macrotask queue. 鼠标对实时性交互要求高, 所以鼠标事件所在的 macrotask queue 权重可能会高于 setTimeout 所在的 macrotask queue</p>
+</blockquote>
+<p>总结:</p>
+<ul>
+<li>只有「执行环境栈」为空时, task 才会被执行</li>
+<li>microtask 的优先级比 macrotask 高</li>
+<li>microtask 一次性全部执行完, 而 macrotask 按单个执行</li>
+</ul>
+<h2 id="macrotask"><a href="#macrotask" class="headerlink" title="macrotask"></a>macrotask</h2><p>属于macrotask的任务有:</p>
+<ul>
+<li>I/O</li>
+<li>UI rendering UI渲染</li>
+<li>Event 事件</li>
+<li>HTML parser HTML文档解析</li>
+<li>DOM manipulation DOM操作</li>
+<li>requestAnimationFrame</li>
+<li>setTimeout/setInterval</li>
+<li>setImmediate(IE10+)</li>
+<li>MessageChannel</li>
+<li>window.postMessage</li>
+<li>XMLHttpRquest.onload</li>
+</ul>
+<h2 id="microtask"><a href="#microtask" class="headerlink" title="microtask"></a>microtask</h2><p>属于micro task的任务有:</p>
+<ul>
+<li>process.nextTick(Node)</li>
+<li>Promise.then</li>
+<li>await</li>
+<li>MutationObserver.observe</li>
+<li>Object.observe(废弃)</li>
+</ul>
+<p>在 chromium 中, microtask queue 由V8 Engine 提供</p>
+<h2 id="来点实例"><a href="#来点实例" class="headerlink" title="来点实例"></a>来点实例</h2><p>Example 1:</p>
+<pre><code>setTimeout(() =&gt; {
+  console.log(&quot;setTimeout&quot;)
+}, 0);
+Promise.resolve().then(() =&gt; {
+  console.log(&quot;Promise.then&quot;)
+})
+</code></pre><p>运行结果:</p>
+<pre><code>Promise.then
+setTimeout
+</code></pre><p>因为 setTimeout 是 macrotask, 而 Promise.then 是 microtask</p>
+<p>所以 microtask 先执行, 所以先打印 Promise.then</p>
+<p>Example 2:</p>
+<pre><code>setTimeout(() =&gt; {
+  console.log(&quot;setTimeout&quot;)
+}, 0)
+Promise.resolve().then(() =&gt; {
+  console.log(&quot;Promise.then1&quot;)
+  Promise.resolve().then(() =&gt; {
+    console.log(&quot;Promise.then2&quot;)
+  })
+})
+</code></pre><p>运行结果:</p>
+<pre><code>Promise.then1
+Promise.then2
+setTimeout
+</code></pre><p>新生成的 microtask 会被添加到 microtask queue 队列的尾部, 且 microtask queue 中的任务会被全部执行</p>
+<p>因此先执行了所有的 Promise.then, 然后再执行setTimeout</p>
+<p>Example 3:</p>
+<pre><code>async function bar() {
+  console.log(&quot;bar&quot;)
+}
+async function foo() {
+  console.log(&quot;foo1&quot;)
+  await bar();
+  console.log(&quot;foo2&quot;)
+}
+Promise.resolve().then(() =&gt; {
+  console.log(&quot;Promise.then&quot;);
+})
+foo()
+</code></pre><p>执行结果:</p>
+<pre><code>foo1
+bar
+Promise.then
+foo2
+</code></pre><p>async/await 关键字本质上是 Promise 的语法糖</p>
+<p>当调用 async 函数时, 如果返回值不是 Promise 对象, 则返回一个 Promise, 原返回值用 Promise 中的 resolve 方法传递</p>
+<p>当遇到 await 时, 先执行 await 右侧的代码, 然后将右侧代码的执行结果包裹在 Promise.resolve 中返回</p>
+<p>而 await 关键字后面的代码(从下一行开始), 则被包裹在 Promise.resolve().then() 中</p>
+<p>因此, 代码等价为:</p>
+<pre><code>function bar() {
+  return new Promise(resolve =&gt; {
+    console.log(&quot;bar&quot;);
+    resolve();
+  });
+}
+function foo() {
+  return new Promise(resolve =&gt; {
+    console.log(&quot;foo1&quot;);
+    resolve(Promise.resolve(bar()).then(_ =&gt; console.log(&quot;foo2&quot;)));
+  });
+}
+Promise.resolve().then(_ =&gt; {
+  console.log(&quot;Promise.then&quot;);
+});
+foo();
+</code></pre></article><nav id="pagination"><div class="pagination clear-fix"><div class="page-prev pull-left"><a href="/2019/03/10/开坑-Link-Chat/"><i class="fa fa-chevron-left"> </i><span>开坑 Link Chat</span></a></div><div class="page-next pull-right"><a href="/2018/12/28/利用flat-和flatMap-扁平化数组/"><span>利用flat()和flatMap()扁平化数组</span><i class="fa fa-chevron-right"></i></a></div></div></nav></div></div><footer><div id="footer-inner"><div class="social-icons"><a class="social-icon" href="https://github.com/returnGirlFriendToNull" target="_blank"><i class="fa fa-github"></i></a></div><p class="design-info">power by <a href="https://hexo.io" target="_blank">Hexo</a> | theme <a href="https://github.com/lazysheep666/terminal_theme" target="_blank">Teminal</a></p><p class="copyright">Copyright © Jeffy Blog 2019</p></div></footer><script src="/js/nav.js"></script><script src="/js/scroll.js"></script><script src="/js/index.js"></script></body></html>

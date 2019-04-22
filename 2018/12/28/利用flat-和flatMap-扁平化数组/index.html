@@ -1,0 +1,50 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta name="generator" content="Hexo 3.8.0"><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta http-equiv="X-UA-Compatible" content="ie=edge"><title>利用flat()和flatMap()扁平化数组 | Jeffy's Blog</title><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://netdna.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"><script src="/js/third-party/jquery.min.js">           </script><script src="/js/third-party/velocity.min.js">           </script><script src="/js/third-party/velocity.ui.min.js">           </script><link rel="icon" href="/img/favicon.ico"></head><body><nav id="nav-bar"><nav class="clear-fix" id="nav-container"><div class="pull-left" id="page-home"><a href="/">Jeffy's Blog</a></div><i class="fa fa-bars pull-right" id="toggle-nav" aria-hidden="true"></i><ul class="pull-right" id="navs"><li><a class="nav" href="/">Home</a></li><li><a class="nav" href="/about">About</a></li><li><a class="nav" href="/tags">Tags</a></li></ul></nav></nav><header id="header-info"><div id="header-container"><div id="site-info"><div id="terminal-pl"><div id="top-bar"><ul id="control"><li class="btn"></li><li class="btn"></li><li class="btn"></li></ul><div id="file-path"><i class="fa fa-folder folder-ic" aria-hidden="true"></i> Jeffy 10 X 10</div></div><div id="code-pl">Last updated: 2018-12-28<br>Jeffy:~ Desktop$ <span class="code-pl-input">node 利用flat()和flatMap()扁平化数组.js</span><br><br>> Post.tags <br><a class="tag" href="#javascript"><span>javascript</span></a><a class="tag" href="#array"><span>array</span></a><br><br>> Post.prev <br><a href="/2019/02/22/Event-Loop/"><span class="answer">Event Loop</span></a><br><br>> Post.next <br><a href="/2018/05/08/初探Vue实现原理之双向绑定MVVM/"><span class="answer">初探Vue实现原理之双向绑定MVVM</span></a></div></div></div></div></header><div id="content-outer"><div id="content-inner"><article id="post"><a class="article-title">利用flat()和flatMap()扁平化数组</a><time class="article-date"><i class="fa fa-calendar" aria-hidden="true"></i> 2018-12-28</time><p>在ES6之前,Lodash和Underscore.js实现了flat帮助我们扁平化数组</p>
+<p>但是如今我们可以直接在原生js里使用flat()和flatMap()</p>
+<h2 id="Array-prototype-flat"><a href="#Array-prototype-flat" class="headerlink" title="Array.prototype.flat()"></a>Array.prototype.flat()</h2><p>flat()会返回一个全新的扁平化后的数组</p>
+<p>假设没有传入参数, 默认会认为是深度1</p>
+<p>如果将数字作为第一个参数传入，则将其用作展平数组的最大深度</p>
+<p>下面是一个简单的例子：</p>
+<pre><code>const animals = [[&apos;🐕&apos;, &apos;🐶&apos;], [&apos;😺&apos;, &apos;🐈&apos;]];
+
+const flatAnimals = animals.flat();
+// same as: const flatAnimals = animals.flat(1);
+
+console.log(flatAnimals);
+
+// [&apos;🐕&apos;, &apos;🐶&apos;, &apos;😺&apos;, &apos;🐈&apos;]
+</code></pre><p>我们来看看传入2的时候会发生什么</p>
+<a id="more"></a>
+<pre><code>const animals = [[&apos;🐕&apos;, &apos;🐶&apos;], [&apos;😺&apos;, &apos;🐈&apos;, [&apos;😿&apos;,[&apos;🦁&apos;], &apos;😻&apos;]]];
+
+const flatAnimals = animals.flat(2);
+
+console.log(flatAnimals);
+// [&apos;🐕&apos;, &apos;🐶&apos;, &apos;😺&apos;, &apos;🐈&apos;, &apos;😿&apos;,[&apos;🦁&apos;], &apos;😻&apos;]
+</code></pre><p>我们发现我们以2的深度为基准进行扁平化</p>
+<p>如果我们传入一个非常大的数字，比如Infinity</p>
+<p>那么这个数组会全部被扁平化</p>
+<pre><code>const animals = [[&apos;🐕&apos;, &apos;🐶&apos;], [&apos;😺&apos;, &apos;🐈&apos;, [&apos;😿&apos;,[&apos;🦁&apos;], &apos;😻&apos;]]];
+
+const flatAnimals = animals.flat(Infinity);
+
+console.log(flatAnimals);
+// [&apos;🐕&apos;, &apos;🐶&apos;, &apos;😺&apos;, &apos;🐈&apos;, &apos;😿&apos;, &apos;🦁&apos;, &apos;😻&apos;]
+</code></pre><h2 id="Array-prototype-flatMap"><a href="#Array-prototype-flatMap" class="headerlink" title="Array.prototype.flatMap()"></a>Array.prototype.flatMap()</h2><p>flatMap()总是返回扁平化深度为1的数组</p>
+<p>它和flat的区别就是参数传入的是一个function，会依次遍历每个元素</p>
+<p>Example:</p>
+<pre><code>const animals = [&apos;🐕&apos;, &apos;🐈&apos;, &apos;🐑&apos;, &apos;🐮&apos;];
+const noises = [&apos;woof&apos;, &apos;meow&apos;, &apos;baa&apos;, &apos;mooo&apos;];
+
+const mappedOnly = animals.map((animal, index) =&gt; [animal, noises[index]]);
+const mappedAndFlatten = animals.flatMap((animal, index) =&gt; [animal, noises[index]]);
+
+console.log(mappedOnly);
+// [[&apos;🐕&apos;, &apos;woof&apos;], [&apos;🐈&apos;, &apos;meow&apos;], [&apos;🐑&apos;, &apos;baa&apos;], [&apos;🐮&apos;, &apos;mooo&apos;]
+
+console.log(mappedAndFlatten);
+// [&apos;🐕&apos;, &apos;woof&apos;, &apos;🐈&apos;, &apos;meow&apos;, &apos;🐑&apos;, &apos;baa&apos;, &apos;🐮&apos;, &apos;mooo&apos;]
+</code></pre><p>flatMap() 回调函数里面的参数和 map() 的参数一样，第一个是值，第二个是索引，第三个是数组本身</p>
+<h2 id="浏览器支持程度"><a href="#浏览器支持程度" class="headerlink" title="浏览器支持程度"></a>浏览器支持程度</h2><p>目前支持度已经非常不错了</p>
+<p>Chrome 69+, Firefox 62+和Safari 12+都支持， 但是目前的 IE 和 Edge 都不支持</p>
+<p>如果您想立即开始使用它并支持所有浏览器，可以使用官方 polyfill / shim 进行 flat 和 flatMap</p>
+</article><nav id="pagination"><div class="pagination clear-fix"><div class="page-prev pull-left"><a href="/2019/02/22/Event-Loop/"><i class="fa fa-chevron-left"> </i><span>Event Loop</span></a></div><div class="page-next pull-right"><a href="/2018/05/08/初探Vue实现原理之双向绑定MVVM/"><span>初探Vue实现原理之双向绑定MVVM</span><i class="fa fa-chevron-right"></i></a></div></div></nav></div></div><footer><div id="footer-inner"><div class="social-icons"><a class="social-icon" href="https://github.com/returnGirlFriendToNull" target="_blank"><i class="fa fa-github"></i></a></div><p class="design-info">power by <a href="https://hexo.io" target="_blank">Hexo</a> | theme <a href="https://github.com/lazysheep666/terminal_theme" target="_blank">Teminal</a></p><p class="copyright">Copyright © Jeffy Blog 2019</p></div></footer><script src="/js/nav.js"></script><script src="/js/scroll.js"></script><script src="/js/index.js"></script></body></html>
